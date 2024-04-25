@@ -34,10 +34,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var image: ImageView
     private lateinit var addPhotoBtn: ImageView
     private lateinit var extractTextBtn: Button
+    private lateinit var resetBtn: Button
     private lateinit var progressBar: ProgressBar
     private lateinit var extractedText: TextView
     private lateinit var mainBinding: ActivityMainBinding
-    private lateinit var imageUri: Uri
+    private var imageUri: Uri? = null
     private lateinit var imageBitmap: Bitmap
     private lateinit var takePictureLauncher: ActivityResultLauncher<Void?>
     private lateinit var getContent: ActivityResultLauncher<String>
@@ -62,7 +63,9 @@ class MainActivity : AppCompatActivity() {
         extractTextBtn = mainBinding.extractTextBtn
         progressBar = mainBinding.progressBar
         extractedText = mainBinding.extractedTextTV
+        resetBtn = mainBinding.resetBtn
 
+        resetBtn.visibility = View.GONE
         progressBar.visibility = View.GONE
 
         getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -85,15 +88,23 @@ class MainActivity : AppCompatActivity() {
 
         extractTextBtn.setOnClickListener {
             try {
-
-                val finalImage: InputImage = if (imageProcessor.isBitmap(image)) {
-                    val optimizedImage = imageProcessor.optimizeImage(imageBitmap)
-                    imageProcessor.bitmapToInputImage(optimizedImage)
+                if (imageUri == null) {
+                    showToast("Please select a Image first")
                 } else {
-                    InputImage.fromFilePath(this, imageUri)
-                }
-                textExtractor.extractText(finalImage, progressBar, extractedText)
 
+                    val finalImage: InputImage? = if (imageProcessor.isBitmap(image)) {
+                        val optimizedImage = imageProcessor.optimizeImage(imageBitmap)
+                        imageProcessor.bitmapToInputImage(optimizedImage)
+                    } else {
+                        imageUri?.let { it1 -> InputImage.fromFilePath(this, it1) }
+                    }
+                    if (finalImage != null) {
+                        textExtractor.extractText(finalImage, progressBar, extractedText)
+                    }
+                    resetBtn.visibility = View.VISIBLE
+                    extractTextBtn.visibility = View.GONE
+
+                }
             } catch (e: Exception) {
                 showToast("Error: ${e.message}")
             }
@@ -104,6 +115,15 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 showToast("Error: ${e.message}")
             }
+        }
+
+        resetBtn.setOnClickListener {
+            image.setImageResource(0)
+            imageUri = null
+            extractedText.text = ""
+            addPhotoBtn.visibility = View.VISIBLE
+            extractTextBtn.visibility = View.VISIBLE
+            resetBtn.visibility = View.GONE
         }
 
 

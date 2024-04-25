@@ -8,7 +8,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.vigyat.myapplication"
+        applicationId = "com.vigyat.image2text"
         minSdk = 26
         targetSdk = 34
         versionCode = 1

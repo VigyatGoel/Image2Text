@@ -18,6 +18,7 @@ import kotlinx.coroutines.withContext
 class TextExtractor(private val context: Context) {
 
     fun extractText(finalImage: InputImage, progressBar: ProgressBar, extractedText: TextView) {
+
         progressBar.visibility = View.VISIBLE
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
@@ -26,11 +27,13 @@ class TextExtractor(private val context: Context) {
             try {
                 val result = recognizer.process(finalImage).await()
                 withContext(Dispatchers.Main) {
-                    progressBar.visibility = View.GONE
+
                     if (result.text.isEmpty()) {
+                        progressBar.visibility = View.GONE
                         Toast.makeText(context, "No text found in the image", Toast.LENGTH_LONG)
                             .show()
                     } else {
+                        progressBar.visibility = View.GONE
                         extractedText.text = result.text
                     }
                 }
